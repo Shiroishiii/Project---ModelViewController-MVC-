@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User { 
+  id    Int     @id @default(autoincrement()) 
+  email String  @unique
+  name  String?
+  password String
+
+  lists   List[]
+
+  createdAt DateTime @default(now())
+}
+
+model List {
+  id  Int @id @default(autoincrement())
+  name String 
+  userId  Int
+  user User @relation(fields:[userId], references: [id])
+
+  products Products[]
+
+  createdAt DateTime @default(now())
+}
+
+enum TypeProduct {
+  FOOD
+  DRINK
+  CLEANING
+  HYGIENE
+  UTILITIES
+  OTHER
+}
+
+
+model Products {
+  id  Int   @id @default(autoincrement())
+  name String?
+  quantity Int  @default(1)
+  checked Boolean @default(false)
+
+  category TypeProduct @default(OTHER)
+
+  listId Int
+  list List @relation(fields: [listId], references:[id])
+
+  createdAt DateTime @default(now())
+}
