@@ -1,4 +1,4 @@
-import React from 'react'
+
 
 function Cadastro() {
     return (
@@ -9,29 +9,29 @@ function Cadastro() {
             {/* body lado direito */}
             <div className='flex w-1/2  h-screen bg-(--cor-branco) justify-center items-center'>
                 {/* componente do cadastro */}
-                <div className='flex flex-col border  bg-(--cor-card-branco) rounded justify-center items-center h-1/2 w-1/2 p-6 gap-4'>
+              <div className='flex flex-col border bg-(--cor-card-branco) rounded justify-center items-center h-auto w-full max-w-md p-6 gap-4 overflow-hidden'>
+                        <h1 className='text-2xl'>Cadastro</h1>
                         {/* div de imputs  */} 
-                        Cadastro
                     <div className='w-full flex flex-col gap-3'>
 
-                        <div className='flex bg-(--cor-branco) flex-col'>
+                        <div className='flex  flex-col'>
                             <label className='mb-1'>Nome</label>
-                            <input className='border p-2 rounded w-full' type="text" />
+                            <input className='bg-(--cor-branco) border p-2 rounded w-full' type="text" />
                         </div>
 
                         <div className='flex flex-col'>
                             <label className='mb-1'>Email</label>
-                            <input className='border p-2 rounded w-full' type="email" />
+                            <input className='bg-(--cor-branco) border p-2 rounded w-full' type="email" />
                         </div>
 
                         <div className='flex flex-col'>
                             <label className='mb-1'>Senha</label>
-                            <input className='border p-2 rounded w-full' type="password" />
+                            <input className='bg-(--cor-branco) border p-2 rounded w-full' type="password" />
                         </div>
 
                         <div className='flex flex-col'>
                             <label className='mb-1'>Confirmar Senha</label>
-                            <input className='border p-2 rounded w-full' type="password" />
+                            <input className='bg-(--cor-branco) border p-2 rounded w-full' type="password" />
                         </div>
 
                     </div>
