@@ -3,21 +3,9 @@ import CreateListModal from '../../components/CreateListModal'
 import UserModal from '../../components/UserModal'
 import ListCard from '../../components/ListCard'
 import AddProductModal from '../../components/AddProductModal'
+import type { List } from '../../models/List'
+import type { Product } from '../../models/Product'
 import { useNavigate } from 'react-router-dom'
-
-interface Product {
-    id: number
-    name: string
-    quantity: number
-    category: string
-    checked: boolean
-}
-
-interface List {
-    id: number
-    name: string
-    products?: Product[]
-}
 
 function Home() {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -27,21 +15,10 @@ function Home() {
 
     const [selectedListId, setSelectedListId] = useState<number | null>(null)
     const [selectedListName, setSelectedListName] = useState("")
+    
 
     const [lists, setLists] = useState<List[]>([])
     const navigate = useNavigate()
-
-    const filteredLists = lists.filter((list) => {
-        const matchList = list.name
-            .toLowerCase()
-            .includes(search.toLowerCase())
-
-        const matchProducts = list.products?.some((p) =>
-            p.name.toLowerCase().includes(search.toLowerCase())
-        )
-
-        return matchList || matchProducts
-    })
 
     useEffect(() => {
         async function fetchLists() {
@@ -58,10 +35,7 @@ function Home() {
         quantity: number
         category: string
     }) {
-        if (!selectedListId) {
-            alert("Selecione uma lista primeiro")
-            return
-        }
+        if (!selectedListId) return
 
         const res = await fetch("http://localhost:3000/products", {
             method: "POST",
@@ -76,20 +50,14 @@ function Home() {
 
         const result = await res.json()
 
-        if (!res.ok) {
-            alert(result.message)
-            return
-        }
+        if (!res.ok) return
 
         setLists((prev) =>
             prev.map((list) =>
                 list.id === selectedListId
                     ? {
                         ...list,
-                        products: [
-                            ...(list.products || []),
-                            result
-                        ]
+                        products: [...(list.products || []), result]
                     }
                     : list
             )
@@ -108,9 +76,7 @@ function Home() {
                 return {
                     ...list,
                     products: (list.products || []).map((p) =>
-                        p.id === itemId
-                            ? { ...p, checked: checked }
-                            : p
+                        p.id === itemId ? { ...p, checked } : p
                     )
                 }
             })
@@ -133,8 +99,6 @@ function Home() {
 
         if (res.ok) {
             setLists((prev) => [...prev, data])
-        } else {
-            alert(data.message)
         }
     }
 
@@ -192,11 +156,11 @@ function Home() {
             {/* LISTAS */}
             <div className="grid grid-cols-5 gap-6">
 
-                {filteredLists.map((list) => (
+                {lists.map((list) => (
                     <ListCard
                         key={list.id}
                         title={list.name}
-                        items={list.products?.map(p => ({
+                        items={list.products?.map((p: Product) => ({
                             id: p.id,
                             name: p.name,
                             quantity: p.quantity,
@@ -213,7 +177,7 @@ function Home() {
                     />
                 ))}
 
-                {/* BOTÃO ADICIONAR LISTA */}
+                {/* ADD LIST */}
                 <div
                     onClick={() => setIsModalOpen(true)}
                     className="bg-(--cor-card-escuro) rounded-2xl
@@ -224,7 +188,6 @@ function Home() {
                 </div>
 
             </div>
-
         </div>
     )
 }
