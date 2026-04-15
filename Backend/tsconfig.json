@@ -1,4 +1,4 @@
-{
+  {
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
@@ -23,7 +23,7 @@
     "forceConsistentCasingInFileNames": true,
   },
   "include": [
-    "src/**/*.ts",
+    "src/**/*.ts", "src/env.ts",
   ],
   "exclude": [
     "node_modules"

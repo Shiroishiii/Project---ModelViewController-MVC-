@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { prisma } from "../prisma/prisma";
-import type { User } from "../generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
+import type { User } from "@prisma/client";
 
+const prisma = new PrismaClient();
 
 export const userRouter = Router()
 
@@ -33,23 +34,20 @@ userRouter.post('/register', async (req, res) => {
 })
 
 userRouter.post('/login', async (req, res) => {
-    const userData = req.body as Partial<User>
+    const { email, password } = req.body
+
     const userExist = await prisma.user.findUnique({
-        where: {
-            email: userData.email || ''
-        }
+        where: { email }
     })
 
-    const validCredentials = userData.password === userExist?.password
-
-    if (userExist && validCredentials) {
-        return res.status(200).json({
-            message: 'Usuário logado com sucesso'
+    if (!userExist || password !== userExist.password) {
+        return res.status(401).json({
+            message: 'Credenciais inválidas'
         })
     }
 
-    return res.status(401).json({
-        message: 'Credenciais inválidas'
+    return res.status(200).json({
+        message: 'Usuário logado com sucesso'
     })
 })
 

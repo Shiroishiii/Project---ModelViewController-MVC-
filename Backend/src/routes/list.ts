@@ -1,64 +1,84 @@
 import { Router } from "express";
-import type { List } from "../generated/prisma/client";
-import { prisma } from "../prisma/prisma";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export const listRouter = Router();
 
 
-export const listRouter = Router()
+// CREATE LIST
+listRouter.post("/list", async (req, res) => {
+    const { title, userId } = req.body;
 
-listRouter.get('list', async (req, res) => {
-    const listData = req.body as List
-    const newList = await prisma.list.create({
-        data: {
-            name: listData.name,
-            userId: listData.userId
+    if (!title || !userId) {
+        return res.status(400).json({ message: "title e userId obrigatórios" });
+    }
+
+    try {
+        const newList = await prisma.list.create({
+            data: {
+                name: title,
+                userId: Number(userId)
+            }
+        });
+
+        return res.status(201).json({
+            message: "Lista criada",
+            data: newList
+        });
+
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+});
+
+
+// GET ALL
+listRouter.get("/list", async (req, res) => {
+    const lists = await prisma.list.findMany({
+        include: {
+            products: true
         }
-    })
-    res.status(201).json({
-        message:'Lista criada',
-        data:newList
-    })
-})
+    });
+    return res.json(lists);
+});
 
-listRouter.get('/list', async (req, res) => {
-    const lists = await prisma.list.findMany()
-    return res.json(lists)
-})
 
-listRouter.get('/list/:id', async (req, res) => {
-    const listId = Number(req.params.id)
+// GET BY ID
+listRouter.get("/list/:id", async (req, res) => {
+    const listId = Number(req.params.id);
+
     const list = await prisma.list.findUnique({
-        where: {
-            id: listId
+        where: { id: listId },
+        include: {
+            products: true
         }
-    })
+    });
 
-    return res.status(200).json(list)
-})
+    return res.json(list);
+});
 
-listRouter.put('/list/:id', async (req, res) => {
-    const listId = Number(req.params.id)
-    const dataUpdate = req.body as Omit<List, 'id'>
 
-    const listUpdated = await prisma.list.update({
-        data: {
-            ...dataUpdate
-        },
-        where: {
-            id: listId
-        }
-    })
+// UPDATE
+listRouter.put("/list/:id", async (req, res) => {
+    const listId = Number(req.params.id);
 
-    return res.status(200).json(listUpdated)
-})
+    const updated = await prisma.list.update({
+        where: { id: listId },
+        data: req.body
+    });
 
-listRouter.delete('/list/:id', async (req, res) => {
-    const listId = Number(req.params.id)
+    return res.json(updated);
+});
 
-    const listDeleted = await prisma.list.delete({
-        where: {
-            id: listId
-        }
-    })
 
-    return res.status(200).json(listDeleted)
-})
+// DELETE
+listRouter.delete("/list/:id", async (req, res) => {
+    const listId = Number(req.params.id);
+
+    const deleted = await prisma.list.delete({
+        where: { id: listId }
+    });
+
+    return res.json(deleted);
+});

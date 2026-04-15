@@ -10,13 +10,12 @@ app.use(cors())
 const port = 3000
 
 app.get('/', (req, res) => {
-    console.log(req)
-    res.send('Hello World')
+    res.send('API LISTIFY rodando 🚀')
 })
 
-app.use(userRouter)
-app.use(listRouter)
-app.use(productRouter)
+app.use('/users', userRouter)
+app.use('/lists', listRouter)
+app.use('/products', productRouter)
 
 app.listen (port, () => {
     console.log("Servidor tá de pé :Q")
