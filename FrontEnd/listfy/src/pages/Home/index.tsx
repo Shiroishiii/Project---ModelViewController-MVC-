@@ -6,10 +6,10 @@ import AddProductModal from '../../components/AddProductModal'
 import type { Product } from '../../models/Product'
 import type { List } from '../../models/List'
 import { useNavigate } from 'react-router-dom'
-import { fetchLists, createList, deleteList } from '../../controllers/listController'
+import { fetchLists, createList } from '../../controllers/listController'
 import { createProduct } from '../../controllers/productController'
 import { toggleProduct, addProductToList } from '../../models/Product'
-import { addList, removeList} from '../../models/List'
+import { addList } from '../../models/List'
 
 function Home() {
     const [isCreateListOpen, setIsCreateListOpen] = useState(false)
