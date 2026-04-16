@@ -27,6 +27,9 @@ O projeto ilustra como ocorre o fluxo de dados dentro de uma aplicação estrutu
 
 ## 🏗️ Estrutura do Projeto
 
+## Link do Diagrama 
+https://excalidraw.com/#room=103ca1c3c0f0f84ade9d,fI37lUiBxXC3Diz4VS6XRA
+
 ```bash
 src/
 │
@@ -35,3 +38,5 @@ src/
 ├── views/         # Camada de apresentação (respostas)
 ├── routes/        # Definição das rotas da aplicação
 ├── app.ts         # Configuração principal da aplicação
+
+
