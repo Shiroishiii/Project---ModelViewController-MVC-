@@ -1,105 +1,71 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import CreateListModal from '../../components/CreateListModal'
 import UserModal from '../../components/UserModal'
 import ListCard from '../../components/ListCard'
 import AddProductModal from '../../components/AddProductModal'
-import type { List } from '../../models/List'
 import type { Product } from '../../models/Product'
+import type { List } from '../../models/List'
 import { useNavigate } from 'react-router-dom'
+import { fetchLists, createList, deleteList } from '../../controllers/listController'
+import { createProduct } from '../../controllers/productController'
+import { toggleProduct, addProductToList } from '../../models/Product'
+import { addList, removeList} from '../../models/List'
 
 function Home() {
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isCreateListOpen, setIsCreateListOpen] = useState(false)
+    const [isAddProductOpen, setisAddProductOpen] = useState(false)
+    // const [isModalOpen, setIsModalOpen] = useState(false)
     const [isUserModalOpen, setIsUserModalOpen] = useState(false)
-    const [isProductModalOpen, setIsProductModalOpen] = useState(false)
+    // const [isProductModalOpen, setIsProductModalOpen] = useState(false)
     const [search, setSearch] = useState("")
+    const [lists, setLists] = useState<List[]>([])
 
     const [selectedListId, setSelectedListId] = useState<number | null>(null)
     const [selectedListName, setSelectedListName] = useState("")
-    
 
-    const [lists, setLists] = useState<List[]>([])
+
+
     const navigate = useNavigate()
 
     useEffect(() => {
-        async function fetchLists() {
-            const res = await fetch("http://localhost:3000/lists/list")
-            const data = await res.json()
+        async function loadLists() {
+            const data = await fetchLists()
             setLists(data)
         }
 
-        fetchLists()
+        loadLists()
     }, [])
 
-    async function createProduct(data: {
-        name: string
-        quantity: number
-        category: string
-    }) {
-        if (!selectedListId) return
+    async function handleCreatelist(title: string) {
+        const data = await createList(title)
 
-        const res = await fetch("http://localhost:3000/products", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ...data,
-                listId: selectedListId
-            })
-        })
-
-        const result = await res.json()
-
-        if (!res.ok) return
-
-        setLists((prev) =>
-            prev.map((list) =>
-                list.id === selectedListId
-                    ? {
-                        ...list,
-                        products: [...(list.products || []), result]
-                    }
-                    : list
-            )
-        )
-
-        setIsProductModalOpen(false)
-        setSelectedListId(null)
-        setSelectedListName("")
+        setLists(prev => addList(prev, data))
+        setIsCreateListOpen(false)
     }
 
-    function handleToggleCheck(listId: number, itemId: number, checked: boolean) {
-        setLists((prev) =>
-            prev.map((list) => {
-                if (list.id !== listId) return list
+    async function handleCreateProduct(productData: Product) {
+        const result = await createProduct(productData, selectedListId)
 
-                return {
-                    ...list,
-                    products: (list.products || []).map((p) =>
-                        p.id === itemId ? { ...p, checked } : p
-                    )
-                }
-            })
-        )
-    }
-
-    async function createList(title: string) {
-        const res = await fetch("http://localhost:3000/lists/list", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                title,
-                userId: 1
-            })
-        })
-
-        const data = await res.json()
-
-        if (res.ok) {
-            setLists((prev) => [...prev, data])
+        if (result.ok) {
+            setLists(prev => addProductToList(prev, selectedListId, result.data))
+            setisAddProductOpen(false)
+            setSelectedListId(null)
+            setSelectedListName("")
         }
+    }
+
+    function handleToggleCheck(listId, itemId, checked) {
+        setLists(prev => toggleProduct(prev, listId, itemId, checked))
+    }
+
+    function handleOpenProductModal(listId, listName) {
+        setSelectedListId(listId)
+        setSelectedListName(listName)
+        setisAddProductOpen(true)
+    }
+
+    function handleOpenUserModal() {
+        setIsUserModalOpen(true)
     }
 
     return (
@@ -107,9 +73,9 @@ function Home() {
 
             {/* MODAIS */}
             <CreateListModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onCreate={createList}
+                isOpen={isCreateListOpen}
+                onClose={() => setIsCreateListOpen(false)}
+                onCreate={handleCreatelist}
             />
 
             <UserModal
@@ -119,13 +85,13 @@ function Home() {
             />
 
             <AddProductModal
-                isOpen={isProductModalOpen}
+                isOpen={isAddProductOpen}
                 onClose={() => {
-                    setIsProductModalOpen(false)
+                    setisAddProductOpen(false)
                     setSelectedListId(null)
                     setSelectedListName("")
                 }}
-                onCreate={createProduct}
+                onCreate={handleCreateProduct}
                 listName={selectedListName}
             />
 
@@ -143,7 +109,7 @@ function Home() {
                 />
 
                 <div
-                    onClick={() => setIsUserModalOpen(true)}
+                    onClick={handleOpenUserModal}
                     className="w-10 h-10 rounded-full bg-(--cor-card-escuro)
                     flex items-center justify-center border border-(--bordas-dark)"
                 >
@@ -166,11 +132,7 @@ function Home() {
                             quantity: p.quantity,
                             checked: p.checked
                         })) || []}
-                        onAddProduct={() => {
-                            setSelectedListId(list.id)
-                            setSelectedListName(list.name)
-                            setIsProductModalOpen(true)
-                        }}
+                        onAddProduct={() => { handleOpenProductModal(list.id, list.name)}}
                         onToggleCheck={(itemId, checked) =>
                             handleToggleCheck(list.id, itemId, checked)
                         }
@@ -179,7 +141,7 @@ function Home() {
 
                 {/* ADD LIST */}
                 <div
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsCreateListOpen(true)}
                     className="bg-(--cor-card-escuro) rounded-2xl
                     border border-(--bordas-dark) flex items-center justify-center
                     hover:scale-105 transition cursor-pointer"
